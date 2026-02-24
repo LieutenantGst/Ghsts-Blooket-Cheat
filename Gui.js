@@ -299,7 +299,7 @@
             },
             target: "_blank",
             href: "https://github.com/LieutenantGst/Zips-Blooket-Hacks-And-Cheats-GUI",
-            innerHTML: '<div style="background: rgba(0,0,0,.25); border-radius: 5px; display: block; width: 100%; height: 100%; left: 0; top: 0; position: absolute; transform: translateY(2px); width: 100%; transition: transform .6s cubic-bezier(.3,.7,.4,1)"></div> <div style="background-color: rgb(11, 194, 207); filter: brightness(.7); position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 5px;"></div> <div style="font-weight: 400; background-color: rgb(11, 194, 207); color: white; display: flex; flex-direction: row; align-items: center; justify-content: center; text-align: center; padding: 5px; border-radius: 5px; transform: translateY(-4px); transition: transform .6s cubic-bezier(.3,.7,.4,1)"> <div style="font-family: Titan One, sans-serif; color: white; font-size: 16px; text-shadow: 2px 2px rgb(0 0 0 / 20%); height: 40px; padding: 0 15px; display: flex; flex-direction: row; align-items: center; justify-content: center"> <img style="filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 20%)); margin-right: 10px;" src="https://github.com/LieutenantGst/Zips-Blooket-Hacks-And-Cheats-GUI/raw/refs/heads/main/favicon.ico" width="35" height="35">  GITHUB </div> </div>'
+            innerHTML: '<div style="background: rgba(0,0,0,.25); border-radius: 5px; display: block; width: 100%; height: 100%; left: 0; top: 0; position: absolute; transform: translateY(2px); width: 100%; transition: transform .6s cubic-bezier(.3,.7,.4,1)"></div> <div style="background-color: rgb(11, 194, 207); filter: brightness(.7); position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 5px;"></div> <div style="font-weight: 400; background-color: rgb(11, 194, 207); color: white; display: flex; flex-direction: row; align-items: center; justify-content: center; text-align: center; padding: 5px; border-radius: 5px; transform: translateY(-4px); transition: transform .6s cubic-bezier(.3,.7,.4,1)"> <div style="font-family: Titan One, sans-serif; color: white; font-size: 16px; text-shadow: 2px 2px rgb(0 0 0 / 20%); height: 40px; padding: 0 15px; display: flex; flex-direction: row; align-items: center; justify-content: center"> <img style="filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 20%)); margin-right: 10px;" src="https://github.com/LieutenantGst/Ghsts-Blooket-Cheat/raw/refs/heads/main/favicon.ico" width="35" height="35">  GITHUB </div> </div>'
         })), l("div", {
             className: "contentWrapper",
             style: {
@@ -5666,7 +5666,7 @@
                 var a = document.querySelector("link[rel*='icon']") || document.createElement("link");
                 a.type = "image/x-icon",
                     a.rel = "shortcut icon",
-                    a.href = e || "https://github.com/LieutenantGst/Zips-Blooket-Hacks-And-Cheats-GUI/raw/refs/heads/main/favicon.ico",
+                    a.href = e || "https://www.blooket.com/favicon.ico",
                     document.getElementsByTagName("head")[0].appendChild(a),
                     document.title = t || "Blooket"
             }
