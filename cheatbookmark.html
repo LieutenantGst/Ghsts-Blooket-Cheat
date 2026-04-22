@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bookmarklet Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #080c14;
+    --card: #0f1520;
+    --card2: #141c2b;
+    --border: #1c2740;
+    --fg: #e1e7f0;
+    --muted: #5a6a84;
+    --accent: #22d3a7;
+    --accent-dim: rgba(34,211,167,0.12);
+    --accent-glow: rgba(34,211,167,0.3);
+    --red: #f0544f;
+    --yellow: #f5b731;
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    position: relative;
+  }
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse 60% 50% at 30% 20%, rgba(34,211,167,0.04) 0%, transparent 100%),
+      radial-gradient(ellipse 50% 60% at 80% 80%, rgba(14,165,233,0.03) 0%, transparent 100%);
+    pointer-events:none;
+  }
+
+  .wrap { position:relative; z-index:1; width:100%; max-width:600px; }
+
+  .top { text-align:center; margin-bottom:2rem; }
+  .top h1 {
+    font-size:1.8rem; font-weight:700; letter-spacing:-0.03em;
+  }
+  .top h1 span { color:var(--accent); }
+  .top p { color:var(--muted); font-size:0.88rem; margin-top:0.4rem; line-height:1.5; }
+
+  .box {
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:1.8rem;
+    position:relative;
+    overflow:hidden;
+  }
+  .box + .box { margin-top:1rem; }
+  .box::after {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg, transparent 5%, var(--accent-glow) 50%, transparent 95%);
+  }
+
+  .lbl {
+    font-size:0.72rem; font-weight:600; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.6rem;
+    display:flex; align-items:center; gap:0.4rem;
+  }
+  .lbl i { font-size:0.68rem; color:var(--accent); }
+
+  .step {
+    display:flex; align-items:flex-start; gap:0.8rem; margin-bottom:1.2rem;
+  }
+  .step:last-child { margin-bottom:0; }
+  .step-num {
+    flex-shrink:0;
+    width:26px; height:26px;
+    border-radius:8px;
+    background:var(--accent-dim);
+    color:var(--accent);
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.75rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step-text { font-size:0.88rem; line-height:1.6; color:var(--fg); }
+  .step-text strong { color:var(--accent); font-weight:600; }
+  .step-text code {
+    background:var(--card2); border:1px solid var(--border);
+    padding:0.1em 0.4em; border-radius:5px;
+    font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--yellow);
+  }
+
+  /* The actual bookmarklet link */
+  .bookmarklet-link {
+    display:flex; align-items:center; justify-content:center; gap:0.6rem;
+    width:100%;
+    padding:1rem 1.5rem;
+    margin-top:1rem;
+    background: linear-gradient(135deg, var(--accent-dim), rgba(14,165,233,0.08));
+    border:2px dashed var(--accent);
+    border-radius:12px;
+    color:var(--accent);
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.95rem; font-weight:700;
+    text-decoration:none;
+    cursor:grab;
+    transition: all 0.25s ease;
+    user-select:none;
+    position:relative;
+    overflow:hidden;
+  }
+  .bookmarklet-link::before {
+    content:'';
+    position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(34,211,167,0.08), transparent);
+    opacity:0; transition:opacity 0.25s;
+  }
+  .bookmarklet-link:hover {
+    background: linear-gradient(135deg, rgba(34,211,167,0.18), rgba(14,165,233,0.12));
+    border-color:var(--accent);
+    box-shadow: 0 0 30px var(--accent-glow);
+    transform: translateY(-1px);
+  }
+  .bookmarklet-link:hover::before { opacity:1; }
+  .bookmarklet-link:active { cursor:grabbing; transform:scale(0.98); }
+  .bookmarklet-link i, .bookmarklet-link span { position:relative; z-index:1; }
+
+  .drag-hint {
+    text-align:center; margin-top:0.7rem;
+    font-size:0.75rem; color:var(--muted);
+    animation: pulse-hint 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse-hint {
+    0%,100% { opacity:0.5; }
+    50% { opacity:1; }
+  }
+
+  /* Manual paste section */
+  .paste-section { display:none; }
+  .paste-section.visible { display:block; }
+  textarea {
+    width:100%; height:140px;
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:0.9rem;
+    color:var(--fg);
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.75rem;
+    resize:vertical;
+    outline:none;
+    transition:border-color 0.2s;
+  }
+  textarea:focus { border-color:var(--accent); }
+  textarea::placeholder { color:var(--muted); }
+
+  .btn-row { display:flex; gap:0.6rem; margin-top:0.8rem; flex-wrap:wrap; }
+  .btn {
+    padding:0.6rem 1.2rem;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:var(--card2);
+    color:var(--fg);
+    font-family:'Space Grotesk',sans-serif;
+    font-size:0.82rem; font-weight:600;
+    cursor:pointer;
+    transition:all 0.2s;
+    display:inline-flex; align-items:center; gap:0.4rem;
+  }
+  .btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+  .btn-primary {
+    background:var(--accent);
+    color:#080c14;
+    border-color:var(--accent);
+  }
+  .btn-primary:hover {
+    background:#1bba94;
+    box-shadow:0 0 20px var(--accent-glow);
+    color:#080c14;
+  }
+
+  .toast {
+    position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(120%);
+    background:var(--card2); border:1px solid var(--border);
+    padding:0.7rem 1.4rem; border-radius:10px;
+    font-size:0.82rem; color:var(--fg);
+    display:flex; align-items:center; gap:0.5rem;
+    z-index:999;
+    transition:transform 0.4s cubic-bezier(0.22,1,0.36,1);
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast i { color:var(--accent); }
+
+  .fallback-toggle {
+    display:inline-flex; align-items:center; gap:0.4rem;
+    background:none; border:none; color:var(--muted);
+    font-family:'Space Grotesk',sans-serif;
+    font-size:0.78rem; cursor:pointer;
+    margin-top:0.8rem;
+    transition:color 0.2s;
+  }
+  .fallback-toggle:hover { color:var(--accent); }
+
+  .divider {
+    display:flex; align-items:center; gap:0.8rem;
+    margin:1rem 0;
+    color:var(--muted); font-size:0.72rem;
+    text-transform:uppercase; letter-spacing:0.1em;
+  }
+  .divider::before, .divider::after {
+    content:''; flex:1; height:1px; background:var(--border);
+  }
+
+  /* Loading spinner */
+  .spinner {
+    width:16px; height:16px;
+    border:2px solid var(--border);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <h1><span>Ghsts</span> Bookmarklet</h1>
+    <p>Drag the button below to your Chrome bookmarks bar</p>
+  </div>
+
+  <!-- Instructions -->
+  <div class="box">
+    <div class="lbl"><i class="fa-solid fa-circle-info"></i> How to install</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Make sure your <strong>bookmarks bar</strong> is visible. Press <code>Ctrl+Shift+B</code> if it's hidden.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>Drag</strong> the green button below onto your bookmarks bar.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">Go to <strong>Blooket</strong>, click the bookmark, and the GUI will appear.</div>
+    </div>
+  </div>
+
+  <!-- Bookmarklet drag target -->
+  <div class="box" id="mainBox">
+    <div class="lbl"><i class="fa-solid fa-bookmark"></i> Your bookmarklet</div>
+    <div id="loadingArea" style="text-align:center; padding:1.5rem 0;">
+      <div class="spinner"></div>
+      <div style="margin-top:0.8rem; color:var(--muted); font-size:0.82rem;">Fetching script from GitHub...</div>
+    </div>
+    <div id="bookmarkletArea" style="display:none;"></div>
+    <button class="fallback-toggle" id="fallbackBtn" style="display:none;">
+      <i class="fa-solid fa-paste"></i> Can't fetch? Paste the code manually
+    </button>
+  </div>
+
+  <!-- Manual paste fallback -->
+  <div class="box paste-section" id="pasteBox">
+    <div class="lbl"><i class="fa-solid fa-code"></i> Paste raw JS</div>
+    <textarea id="pasteInput" placeholder="Paste the contents of Gui.js here..."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="generateBtn">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Bookmarklet
+      </button>
+      <button class="btn" id="copyBtn" style="display:none;">
+        <i class="fa-solid fa-copy"></i> Copy URL
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <i class="fa-solid fa-check"></i>
+  <span id="toastMsg">Done!</span>
+</div>
+
+<script>
+  const SOURCE_URL = 'https://raw.githubusercontent.com/LieutenantGst/Ghsts-Blooket-Cheat/refs/heads/main/Gui.js';
+  const loadingArea = document.getElementById('loadingArea');
+  const bookmarkletArea = document.getElementById('bookmarkletArea');
+  const fallbackBtn = document.getElementById('fallbackBtn');
+  const pasteBox = document.getElementById('pasteBox');
+  const pasteInput = document.getElementById('pasteInput');
+  const generateBtn = document.getElementById('generateBtn');
+  const copyBtn = document.getElementById('copyBtn');
+
+  /* Show a toast message */
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  /* Build the bookmarklet link element */
+  function renderBookmarklet(jsCode) {
+    bookmarkletArea.innerHTML = '';
+
+    const href = 'javascript:' + encodeURIComponent('(function(){' + jsCode + '})()');
+
+    const a = document.createElement('a');
+    a.className = 'bookmarklet-link';
+    a.href = href;
+    a.setAttribute('rel', 'nofollow');
+    a.innerHTML = '<i class="fa-solid fa-ghost"></i><span>Ghsts Blooket Cheat</span>';
+    bookmarkletArea.appendChild(a);
+
+    const hint = document.createElement('div');
+    hint.className = 'drag-hint';
+    hint.textContent = 'Drag this to your bookmarks bar';
+    bookmarkletArea.appendChild(hint);
+
+    loadingArea.style.display = 'none';
+    bookmarkletArea.style.display = 'block';
+
+    /* Store for copy button */
+    bookmarkletArea.dataset.href = href;
+  }
+
+  /* Try fetching the script */
+  async function fetchScript() {
+    try {
+      const res = await fetch(SOURCE_URL);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if (!text.trim()) throw new Error('Empty response');
+      renderBookmarklet(text.trim());
+    } catch (e) {
+      /* Fetch failed — show fallback */
+      loadingArea.innerHTML =
+        '<div style="color:var(--yellow);font-size:0.85rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;">' +
+        '<i class="fa-solid fa-triangle-exclamation"></i> Could not fetch automatically (CORS blocked)</div>';
+      fallbackBtn.style.display = 'inline-flex';
+    }
+  }
+
+  /* Fallback toggle */
+  fallbackBtn.addEventListener('click', () => {
+    pasteBox.classList.toggle('visible');
+  });
+
+  /* Manual generate */
+  generateBtn.addEventListener('click', () => {
+    const code = pasteInput.value.trim();
+    if (!code) {
+      toast('Paste the JS code first');
+      return;
+    }
+    loadingArea.style.display = 'none';
+    renderBookmarklet(code);
+    copyBtn.style.display = 'inline-flex';
+    toast('Bookmarklet ready — drag it up!');
+    pasteBox.classList.remove('visible');
+  });
+
+  /* Copy bookmarklet URL */
+  copyBtn.addEventListener('click', () => {
+    const href = bookmarkletArea.dataset.href;
+    if (!href) return;
+    navigator.clipboard.writeText(href).then(() => {
+      toast('Copied! Paste it into a bookmark URL field.');
+    }).catch(() => {
+      toast('Copy failed — drag the link instead.');
+    });
+  });
+
+  /* Start */
+  fetchScript();
+</script>
+</body>
+</html>
